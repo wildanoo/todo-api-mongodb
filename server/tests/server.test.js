@@ -86,8 +86,8 @@ describe('GET /todos/:id', () => {
 		.end(done);
 	});
 
-	it('Should return 404 if todo not found', function done(){
-		this.timeout(500);
+	it('Should return 404 if todo not found', function (done) {
+		this.timeout(500)
   
 		var hexID = new ObjectID().toHexString();
 		request(app)
