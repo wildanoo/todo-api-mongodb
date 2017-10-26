@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const expect = require('expect');
 const request = require('supertest');
 
@@ -11,7 +12,9 @@ const todos = [{
 	text : 'First test todo'
 },{
 	_id : new ObjectID(),
-	text : 'Second test todo'
+	text : 'Second test todo',
+	completed : true,
+	completedAt : 123
 }];
 
 beforeEach((done) => {
@@ -88,7 +91,7 @@ describe('GET /todos/:id', () => {
 
 	it('Should return 404 if todo not found', function (done) {
 		this.timeout(500)
-  
+
 		var hexID = new ObjectID().toHexString();
 		request(app)
 		.get(`/todos/${hexID}`)
@@ -140,4 +143,44 @@ describe('DELETE /todos/:id', () => {
 		.expect(404)
 		.end(done);
 	});
+});
+
+describe('PATCH /todos/:id', () => {
+	it('Should update the todo', (done) => {
+		var idOne = todos[0]._id.toHexString();
+		var text = "Sample text for testing";
+
+		request(app)
+		.patch(`/todos/${idOne}`)
+		.send({text,
+			completed : true
+		})
+		.expect(200)
+		.expect((res) => {
+			expect(res.body.todos.text).toBe(text);
+			expect(res.body.todos.completed).toBe(true);
+			expect(typeof res.body.todos.completedAt).toBe('number');
+		})
+		.end(done);
+	});
+
+	it('Should clear completedAt when todo is not completed',(done) => {
+		var idTwo = todos[1]._id.toHexString();
+		var text = "Dummy text for second test";
+
+		request(app)
+		.patch(`/todos/${idTwo}`)
+		.send({
+			text,
+			completed : false
+		})
+		.expect(200)
+		.expect((res) => {
+			expect(res.body.todos.text).toBe(text);
+			expect(res.body.todos.completed).toBe(false);
+			expect(res.body.todos.completedAt).toBeNull();
+		})
+		.end(done)
+	});
+
 });
